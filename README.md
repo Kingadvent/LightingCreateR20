@@ -4,6 +4,8 @@ Uma aplicação web interativa e leve desenvolvida para facilitar a criação e 
 
 [Acessar Criador de R20](https://htmlpreview.github.io/?https://github.com/Kingadvent/LightingCreateR20/blob/main/creater20.html)
 
+[Comunidade](https://chat.whatsapp.com/HjkOemoNpxeImcMlzLKwaq)
+
 # 🚀 Funcionalidades
 ⚡ Configuração Rápida: Modal interativo que permite preencher e mapear os canais DMX do aparelho de forma instantânea.
 
@@ -33,4 +35,4 @@ Temos uma Comunidade para enviar seus R20 ou um apoiar e ajuda o outro.
 
 Caso queira ajudar doando me procure no WhatsApp
 
-https://chat.whatsapp.com/HjkOemoNpxeImcMlzLKwaq
+[Comunidade](https://chat.whatsapp.com/HjkOemoNpxeImcMlzLKwaq)
