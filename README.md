@@ -1,6 +1,7 @@
 # 🎛️ R20 Personality Builder - Gerador Web para Avolites
 
 Uma aplicação web interativa e leve desenvolvida para facilitar a criação e geração de arquivos de personalidade .R20 para consoles de iluminação Avolites (como Pearl 2010, Tiger, etc.).
+[![Nome do Botão](https://shields.io)](https://htmlpreview.github.io/?https://github.com/Kingadvent/LightingCreateR20/blob/main/creater20.html)
 
 # 🚀 Funcionalidades
 ⚡ Configuração Rápida: Modal interativo que permite preencher e mapear os canais DMX do aparelho de forma instantânea.
