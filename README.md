@@ -21,3 +21,14 @@ HTML5
 CSS3 (Layout responsivo com CSS Grid e Flexbox em temas escuros)
 
 JavaScript (Vanilla / ES6) (Manipulação de DOM sem dependências externas)
+
+# 🤝 Contribuições
+Contribuições são sempre bem-vindas! Se quiser adicionar novas tabelas do padrão Avolites (como Range Tables ou textos de Patch específicos), fique à vontade para abrir uma Issue ou enviar um Pull Request.
+
+Qualquer ajuste de texto, nome de autor ou link do repositório que quiser alterar, é só falar!
+
+Temos uma Comunidade para enviar seus R20 ou um apoiar e ajuda o outro.
+
+Caso queira ajudar doando me procure no WhatsApp
+
+https://chat.whatsapp.com/HjkOemoNpxeImcMlzLKwaq
