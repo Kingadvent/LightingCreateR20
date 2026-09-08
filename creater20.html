@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerador R20 Personality Builder</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; margin: 0; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    h2 { color: #38bdf8; margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #334155; padding-bottom: 8px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+    label { font-size: 0.8rem; font-weight: bold; color: #94a3b8; display: block; margin-bottom: 5px; }
+    input, select { width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; padding: 8px; border-radius: 4px; box-sizing: border-box; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.82rem; }
+    th, td { border: 1px solid #334155; padding: 6px; text-align: left; }
+    th { background: #0f172a; color: #38bdf8; font-size: 0.75rem; text-transform: uppercase; }
+
+    button { background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    button:hover { background: #1d4ed8; }
+    button.btn-success { background: #059669; font-size: 1rem; padding: 12px 20px; width: 100%; }
+    button.btn-success:hover { background: #047857; }
+    button.btn-quick { background: #d97706; color: white; }
+    button.btn-quick:hover { background: #b45309; }
+    button.btn-danger { background: #dc2626; padding: 4px 8px; }
+
+    textarea { width: 100%; height: 250px; background: #080d1a; color: #38bdf8; font-family: monospace; padding: 10px; border-radius: 6px; box-sizing: border-box; }
+
+    .palette-group, .macro-card { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
+    .palette-group-header, .macro-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
+
+    /* MODAL DE RÁPIDO AJUSTE */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-content { background: #c6d9f1; color: #000; width: 550px; padding: 20px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); font-size: 0.85rem; }
+    .modal-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 10px; color: #000080; border-bottom: 2px solid #000080; padding-bottom: 4px; }
+    .warning-box { background: #ffeb9c; border: 1px dashed #9c6500; padding: 8px; margin-bottom: 15px; font-size: 0.75rem; color: #9c6500; }
+    .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 12px; margin-bottom: 20px; }
+    .quick-item { display: flex; align-items: center; justify-content: space-between; background: #dce6f1; padding: 4px 6px; border-radius: 3px; }
+    .quick-item label { color: #000; font-size: 0.8rem; font-weight: normal; margin: 0; }
+    .quick-item input { width: 45px; background: #fff; color: #000; border: 1px solid #7f9db9; padding: 2px 4px; text-align: center; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+    .modal-actions button { background: #e1e1e1; color: #000; border: 1px solid #707070; padding: 4px 15px; }
+    .modal-actions button:hover { background: #d0d0d0; }
+  </style>
+</head>
+<body>
+
+  <!-- MODAL DE CONFIGURAÇÃO RÁPIDA -->
+  <div class="modal-overlay" id="quickModal">
+    <div class="modal-content">
+      <div class="modal-title">Rápido ajuste de canal</div>
+      <div>Complete os espaços com o número do canal DMX correspondente:</div>
+      <div class="warning-box">
+        <strong>Cuidado:</strong> Esta ação reconfigura a lista de canais.
+      </div>
+
+      <div class="quick-grid">
+        <div class="quick-item"><label>Dimmer</label><input type="number" id="q_dimmer"></div>
+        <div class="quick-item"><label>Iris</label><input type="number" id="q_iris"></div>
+        <div class="quick-item"><label>Shutter</label><input type="number" id="q_shutter"></div>
+
+        <div class="quick-item"><label>Zoom</label><input type="number" id="q_zoom"></div>
+        <div class="quick-item"><label>Focus</label><input type="number" id="q_focus"></div>
+        <div class="quick-item"><label>Prism</label><input type="number" id="q_prism"></div>
+
+        <div class="quick-item"><label>Frost</label><input type="number" id="q_frost"></div>
+        <div class="quick-item"></div><div class="quick-item"></div>
+
+        <div class="quick-item"><label>Gobo 1</label><input type="number" id="q_gobo1"></div>
+        <div class="quick-item"><label>Gobo 2</label><input type="number" id="q_gobo2"></div>
+        <div class="quick-item"></div>
+
+        <div class="quick-item"><label>Gobo 1 Rot.</label><input type="number" id="q_gobo1rot"></div>
+        <div class="quick-item"><label>Gobo 2 Rot.</label><input type="number" id="q_gobo2rot"></div>
+        <div class="quick-item"></div>
+
+        <div class="quick-item"><label>Color W. 1</label><input type="number" id="q_color1"></div>
+        <div class="quick-item"><label>Color W. 2</label><input type="number" id="q_color2"></div>
+        <div class="quick-item"></div>
+
+        <div class="quick-item"><label>C. Mix 1 (Red)</label><input type="number" id="q_cmix1"></div>
+        <div class="quick-item"><label>C. Mix 2 (Green)</label><input type="number" id="q_cmix2"></div>
+        <div class="quick-item"><label>C. Mix 3 (Blue)</label><input type="number" id="q_cmix3"></div>
+
+        <div class="quick-item"><label>Pan</label><input type="number" id="q_pan"></div>
+        <div class="quick-item"><label>Tilt</label><input type="number" id="q_tilt"></div>
+        <div class="quick-item"></div>
+
+        <div class="quick-item"><label>Pan fine</label><input type="number" id="q_panfine"></div>
+        <div class="quick-item"><label>Tilt fine</label><input type="number" id="q_tiltfine"></div>
+        <div class="quick-item"></div>
+
+        <div class="quick-item"><label>Speed 1</label><input type="number" id="q_speed1"></div>
+        <div class="quick-item"><label>Speed 2</label><input type="number" id="q_speed2"></div>
+        <div class="quick-item"></div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" onclick="applyQuickSetup()">Próximo</button>
+        <button type="button" onclick="closeQuickModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width: 1400px; margin: 0 auto;">
+    <h1>R20 Personality Builder</h1>
+
+    <!-- TELA 1 -->
+    <div class="card">
+      <h2>Tela 1: Informações Básicas do Arquivo</h2>
+      <div class="grid">
+        <div>
+          <label>Nome do Autor:</label>
+          <input type="text" id="author" value="EDUARDO GD" maxlength="12">
+        </div>
+        <div>
+          <label>Fabricante do Aparelho:</label>
+          <input type="text" id="brand" value="chines">
+        </div>
+        <div>
+          <label>Nome Completo (e Modo):</label>
+          <input type="text" id="fullName" value="beam 200 5r 16 cns">
+        </div>
+        <div>
+          <label>Nome para Patch no Console (Máx 11 char):</label>
+          <input type="text" id="patchName" value="beam_5r" maxlength="11">
+        </div>
+      </div>
+    </div>
+
+    <!-- TELA 2 -->
+    <div class="card">
+      <h2>Tela 2: Configurações do Aparelho</h2>
+      <div class="grid">
+        <div>
+          <label>Tipo de Aparelho:</label>
+          <select id="fixtureType" onchange="togglePanTilt()">
+            <option value="MOVING">Moving Light (Com Movimento Head/Mirror)</option>
+            <option value="CONVENTIONAL">Luz Convencional (Par LED / Strobe / Sem Movimento)</option>
+          </select>
+        </div>
+        <div id="panBox">
+          <label>Movimento Máximo PAN (°):</label>
+          <input type="number" id="panDeg" value="540">
+        </div>
+        <div id="tiltBox">
+          <label>Movimento Máximo TILT (°):</label>
+          <input type="number" id="tiltDeg" value="270">
+        </div>
+      </div>
+    </div>
+
+    <!-- TABELA DMX -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h2>Tela 3: Descrição, Botão e Atributos DMX</h2>
+        <div>
+          <button type="button" class="btn-quick" onclick="openQuickModal()">⚡ Configuração rápida!</button>
+          <button type="button" onclick="addChannel()">+ Adicionar Canal</button>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table id="channelsTable">
+          <thead>
+            <tr>
+              <th style="width: 30px;">Ch</th>
+              <th>Nome do Canal</th>
+              <th style="width: 170px;">Botão de Atributo</th>
+              <th>Roda (Fader)</th>
+              <th style="width: 180px;">Tipo de Canal</th>
+              <th style="width: 180px;">Tipo de Atributo (Letra)</th>
+              <th style="width: 60px;">Locate</th>
+              <th style="width: 60px;">High</th>
+              <th style="width: 60px;">Low</th>
+              <th style="width: 40px;">Ação</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TELA 5.2: AUTO-PALETTES -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h2>5.2 - Arrume Palettes Pré-definidos (Auto-Palettes)</h2>
+        <button type="button" onclick="addPaletteGroup()">+ Adicionar Grupo de Palette</button>
+      </div>
+      <div id="paletteGroupsContainer"></div>
+    </div>
+
+    <!-- TELA 5.3: MACROS -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h2>5.3 - Arrume a Função Macros (Lamp On, Lamp Off, Reset)</h2>
+        <button type="button" onclick="addMacro()">+ Adicionar Macro</button>
+      </div>
+      <div id="macrosContainer"></div>
+    </div>
+
+    <!-- EXPORTAR -->
+    <div class="card">
+      <button type="button" class="btn-success" onclick="downloadR20()">💾 BAIXAR ARQUIVO .R20 COMPLETO</button>
+      <br><br>
+      <textarea id="output" readonly placeholder="O arquivo .R20 gerado aparecerá aqui..."></textarea>
+    </div>
+  </div>
+
+  <script>
+    let channels = [];
+    // INICIAM ZERADOS / LIMPOS
+    let paletteGroups = [];
+    let macros = [];
+
+    const BUTTON_OPTIONS = [
+      { code: 1, label: "01 / 11 - Dimmer" },
+      { code: 2, label: "02 / 12 - Iris / Shutter" },
+      { code: 3, label: "03 / 13 - Tilt / Pan" },
+      { code: 4, label: "04 / 14 - Colour" },
+      { code: 5, label: "05 / 15 - Zoom / Focus" },
+      { code: 6, label: "06 / 16 - Gobo" },
+      { code: 7, label: "07 / 17 - Gobo Function" },
+      { code: 8, label: "08 / 18 - Speed" },
+      { code: 9, label: "09 / 19 - Effect / Yellow" },
+      { code: 10, label: "10 / 20 - Cyan / Magenta" },
+      { code: 11, label: "11 / 21 - Control / Reset" },
+      { code: 12, label: "12 / 22 - Macro / Special" },
+      { code: 0, label: "00 - Nenhum / Fora dos Botões" }
+    ];
+
+    const ATTR_OPTIONS = [
+      { code: "A", label: "-A- Colour Wheel 1" },
+      { code: "O", label: "-O- Shutter / Strobe" },
+      { code: "H", label: "-H- Dimmer (HTP)" },
+      { code: "I", label: "-I- Gobo Wheel 1" },
+      { code: "J", label: "-J- Gobo Wheel 2" },
+      { code: "K", label: "-K- Gobo 1 Rotate" },
+      { code: "M", label: "-M- Gobo 2 Rotate" },
+      { code: "P", label: "-P- Prism" },
+      { code: "R", label: "-R- Prism Rot / Effect Rot" },
+      { code: "S", label: "-S- Frost" },
+      { code: "L", label: "-L- Focus" },
+      { code: "Q", label: "-Q- Zoom" },
+      { code: "G", label: "-G- Iris" },
+      { code: "E", label: "-E- Pan" },
+      { code: "F", label: "-F- Tilt" },
+      { code: "T", label: "-T- Red" },
+      { code: "U", label: "-U- Green" },
+      { code: "V", label: "-V- Blue" },
+      { code: "0", label: "-0- Sem Categoria / Func / Reset" }
+    ];
+
+    const MAP_PRESETS = {
+      q_dimmer:   { name: "Dimmer", bank: 1, fader: 1, type: "H", attr: "H", locate: 255, high: 255, low: 0 },
+      q_shutter:  { name: "Shutter", bank: 2, fader: 61, type: "L", attr: "O", locate: 255, high: 0, low: 0 },
+      q_color1:   { name: "Color W. 1", bank: 4, fader: 1, type: "L", attr: "A", locate: 0, high: 0, low: 0 },
+      q_color2:   { name: "Color W. 2", bank: 4, fader: 61, type: "L", attr: "N", locate: 0, high: 0, low: 0 },
+      q_gobo1:    { name: "Gobo 1", bank: 6, fader: 1, type: "L", attr: "I", locate: 0, high: 0, low: 0 },
+      q_gobo1rot: { name: "Gobo 1 Rot.", bank: 7, fader: 1, type: "L", attr: "K", locate: 0, high: 0, low: 0 },
+      q_gobo2:    { name: "Gobo 2", bank: 6, fader: 61, type: "L", attr: "J", locate: 0, high: 0, low: 0 },
+      q_gobo2rot: { name: "Gobo 2 Rot.", bank: 7, fader: 61, type: "L", attr: "M", locate: 0, high: 0, low: 0 },
+      q_prism:    { name: "Prism", bank: 9, fader: 1, type: "I", attr: "P", locate: 0, high: 0, low: 0 },
+      q_frost:    { name: "Frost", bank: 5, fader: 61, type: "I", attr: "S", locate: 0, high: 0, low: 0 },
+      q_focus:    { name: "Focus", bank: 5, fader: 1, type: "L", attr: "L", locate: 127, high: 0, low: 0 },
+      q_zoom:     { name: "Zoom", bank: 8, fader: 1, type: "L", attr: "Q", locate: 0, high: 0, low: 0 },
+      q_iris:     { name: "Iris", bank: 2, fader: 1, type: "L", attr: "G", locate: 255, high: 0, low: 0 },
+      q_pan:      { name: "Pan", bank: 3, fader: 61, type: "s", attr: "E", locate: 128, high: 0, low: 0 },
+      q_panfine:  { name: "Pan fine", bank: 0, fader: 0, type: "0", attr: "E", locate: 128, high: 0, low: 0 },
+      q_tilt:     { name: "Tilt", bank: 3, fader: 1, type: "s", attr: "F", locate: 128, high: 0, low: 0 },
+      q_tiltfine: { name: "Tilt fine", bank: 0, fader: 0, type: "0", attr: "F", locate: 128, high: 0, low: 0 },
+      q_cmix1:    { name: "Red", bank: 4, fader: 1, type: "L", attr: "T", locate: 255, high: 255, low: 0 },
+      q_cmix2:    { name: "Green", bank: 4, fader: 61, type: "L", attr: "U", locate: 255, high: 255, low: 0 },
+      q_cmix3:    { name: "Blue", bank: 5, fader: 1, type: "L", attr: "V", locate: 255, high: 255, low: 255 },
+      q_speed1:   { name: "Speed 1", bank: 12, fader: 1, type: "L", attr: "0", locate: 0, high: 0, low: 0 },
+      q_speed2:   { name: "Speed 2", bank: 12, fader: 61, type: "L", attr: "0", locate: 0, high: 0, low: 0 }
+    };
+
+    function openQuickModal() { document.getElementById("quickModal").style.display = "flex"; }
+    function closeQuickModal() { document.getElementById("quickModal").style.display = "none"; }
+
+    function applyQuickSetup() {
+      let tempMap = {};
+      let maxCh = 0;
+
+      for (let key in MAP_PRESETS) {
+        let val = parseInt(document.getElementById(key).value);
+        if (!isNaN(val) && val > 0) {
+          tempMap[val] = MAP_PRESETS[key];
+          if (val > maxCh) maxCh = val;
+        }
+      }
+
+      if (maxCh === 0) {
+        alert("Digite ao menos um número de canal no formulário!");
+        return;
+      }
+
+      channels = [];
+      for (let i = 1; i <= maxCh; i++) {
+        if (tempMap[i]) {
+          channels.push(JSON.parse(JSON.stringify(tempMap[i])));
+        } else {
+          channels.push({ name: `Unused ${i}`, bank: 0, fader: 0, type: "L", attr: "0", locate: 0, high: 0, low: 0 });
+        }
+      }
+
+      renderChannels();
+      closeQuickModal();
+    }
+
+    function renderChannels() {
+      const tbody = document.querySelector("#channelsTable tbody");
+      tbody.innerHTML = "";
+
+      if (channels.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:#94a3b8; padding: 25px;">Nenhum canal configurado. Clique em <strong>"+ Adicionar Canal"</strong> ou use o botão <strong>"⚡ Configuração rápida!"</strong>.</td></tr>`;
+      } else {
+        channels.forEach((ch, i) => {
+          let btnHtml = BUTTON_OPTIONS.map(b => `<option value="${b.code}" ${ch.bank === b.code ? "selected" : ""}>${b.label}</option>`).join("");
+          let attrHtml = ATTR_OPTIONS.map(a => `<option value="${a.code}" ${ch.attr === a.code ? "selected" : ""}>${a.label}</option>`).join("");
+          
+          tbody.innerHTML += `
+            <tr>
+              <td><strong>${i + 1}</strong></td>
+              <td><input type="text" value="${ch.name}" onchange="channels[${i}].name=this.value; updateChannelSelects();"></td>
+              <td><select onchange="channels[${i}].bank=parseInt(this.value)">${btnHtml}</select></td>
+              <td>
+                <select onchange="channels[${i}].fader=parseInt(this.value)">
+                  <option value="1" ${ch.fader === 1 ? "selected" : ""}>Upper (Esquerda)</option>
+                  <option value="61" ${ch.fader === 61 ? "selected" : ""}>Lower (Direita)</option>
+                  <option value="0" ${ch.fader === 0 ? "selected" : ""}>Nenhum (0)</option>
+                </select>
+              </td>
+              <td>
+                <select onchange="channels[${i}].type=this.value">
+                  <option value="H" ${ch.type === "H" ? "selected" : ""}>HTP (Dimmer / Intensidade)</option>
+                  <option value="L" ${ch.type === "L" ? "selected" : ""}>LTP (Fade Contínuo)</option>
+                  <option value="I" ${ch.type === "I" ? "selected" : ""}>Instant (Sem Fade)</option>
+                  <option value="s" ${ch.type === "s" ? "selected" : ""}>16bit LTP (Principal)</option>
+                  <option value="S" ${ch.type === "S" ? "selected" : ""}>16bit LTP not fade (Sem Fade)</option>
+                  <option value="0" ${ch.type === "0" ? "selected" : ""}>Part of a 16bit ch (Fine)</option>
+                </select>
+              </td>
+              <td><select onchange="channels[${i}].attr=this.value">${attrHtml}</select></td>
+              <td><input type="number" value="${ch.locate}" onchange="channels[${i}].locate=parseInt(this.value)"></td>
+              <td><input type="number" value="${ch.high || 0}" onchange="channels[${i}].high=parseInt(this.value)"></td>
+              <td><input type="number" value="${ch.low || 0}" onchange="channels[${i}].low=parseInt(this.value)"></td>
+              <td><button class="btn-danger" type="button" onclick="removeChannel(${i})">X</button></td>
+            </tr>
+          `;
+        });
+      }
+
+      renderPaletteGroups();
+      renderMacros();
+    }
+
+    function updateChannelSelects() {
+      renderPaletteGroups();
+      renderMacros();
+    }
+
+    function getChannelOptionsHTML(selectedChannel) {
+      if (channels.length === 0) {
+        return `<option value="0">Nenhum canal na Tela 3</option>`;
+      }
+      return channels.map((ch, i) => {
+        const chNum = i + 1;
+        return `<option value="${chNum}" ${parseInt(selectedChannel) === chNum ? "selected" : ""}>${chNum}: ${ch.name}</option>`;
+      }).join("");
+    }
+
+    function addChannel() {
+      channels.push({ name: "novo_canal", bank: 1, fader: 1, type: "L", attr: "0", locate: 0, high: 0, low: 0 });
+      renderChannels();
+    }
+
+    function removeChannel(i) {
+      channels.splice(i, 1);
+      renderChannels();
+    }
+
+    /* --- AUTO-PALETTES (5.2) --- */
+    function renderPaletteGroups() {
+      const container = document.getElementById("paletteGroupsContainer");
+      container.innerHTML = "";
+
+      if (paletteGroups.length === 0) {
+        container.innerHTML = `<div style="color: #94a3b8; text-align: center; padding: 15px; border: 1px dashed #334155; border-radius: 6px;">Nenhum grupo de palette configurado. Clique acima em <strong>"+ Adicionar Grupo de Palette"</strong>.</div>`;
+        return;
+      }
+
+      paletteGroups.forEach((group, gIdx) => {
+        let channelOptions = getChannelOptionsHTML(group.channel);
+
+        let rowsHtml = group.items.map((item, iIdx) => `
+          <tr>
+            <td><input type="text" value="${item.name}" onchange="paletteGroups[${gIdx}].items[${iIdx}].name=this.value"></td>
+            <td><input type="number" value="${item.button}" onchange="paletteGroups[${gIdx}].items[${iIdx}].button=parseInt(this.value)"></td>
+            <td><input type="number" value="${item.dmx}" onchange="paletteGroups[${gIdx}].items[${iIdx}].dmx=parseInt(this.value)"></td>
+            <td><button class="btn-danger" type="button" onclick="removePaletteItem(${gIdx}, ${iIdx})">X</button></td>
+          </tr>
+        `).join("");
+
+        container.innerHTML += `
+          <div class="palette-group">
+            <div class="palette-group-header">
+              <div style="display:flex; gap:10px; align-items:center;">
+                <label style="margin:0;">Nome do Grupo:</label>
+                <input type="text" value="${group.name}" style="width:150px;" onchange="paletteGroups[${gIdx}].name=this.value">
+                <label style="margin:0; margin-left:10px;">Canal do Aparelho:</label>
+                <select style="width:160px;" onchange="paletteGroups[${gIdx}].channel=parseInt(this.value)">${channelOptions}</select>
+              </div>
+              <div>
+                <button type="button" onclick="addPaletteItem(${gIdx})">+ Adicionar Item</button>
+                <button type="button" class="btn-danger" onclick="removePaletteGroup(${gIdx})">Excluir Grupo</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome do Palette</th>
+                  <th style="width:120px;">Botão Mesa</th>
+                  <th style="width:120px;">Valor DMX</th>
+                  <th style="width:50px;">Ação</th>
+                </tr>
+              </thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>
+          </div>
+        `;
+      });
+    }
+
+    function addPaletteGroup() {
+      paletteGroups.push({ name: "Novo Grupo", channel: 1, items: [] });
+      renderPaletteGroups();
+    }
+
+    function removePaletteGroup(gIdx) {
+      paletteGroups.splice(gIdx, 1);
+      renderPaletteGroups();
+    }
+
+    function addPaletteItem(gIdx) {
+      paletteGroups[gIdx].items.push({ name: "novo_item", button: 1, dmx: 0 });
+      renderPaletteGroups();
+    }
+
+    function removePaletteItem(gIdx, iIdx) {
+      paletteGroups[gIdx].items.splice(iIdx, 1);
+      renderPaletteGroups();
+    }
+
+    /* --- MACROS (5.3) --- */
+    function renderMacros() {
+      const container = document.getElementById("macrosContainer");
+      container.innerHTML = "";
+
+      if (macros.length === 0) {
+        container.innerHTML = `<div style="color: #94a3b8; text-align: center; padding: 15px; border: 1px dashed #334155; border-radius: 6px;">Nenhum macro configurado. Clique acima em <strong>"+ Adicionar Macro"</strong>.</div>`;
+        return;
+      }
+
+      macros.forEach((m, mIdx) => {
+        let channelOptions = getChannelOptionsHTML(m.channel);
+
+        let stepsHtml = m.steps.map((step, sIdx) => `
+          <tr>
+            <td><strong>#${sIdx + 1}</strong></td>
+            <td>
+              <select onchange="updateMacroStepType(${mIdx}, ${sIdx}, this.value)">
+                <option value="data" ${step.type === 'data' ? 'selected' : ''}>data (Envia valor DMX)</option>
+                <option value="delay" ${step.type === 'delay' ? 'selected' : ''}>delay (Espera um tempo)</option>
+              </select>
+            </td>
+            <td>
+              <input type="number" step="0.1" value="${step.time}" placeholder="Segundos" ${step.type === 'data' ? 'disabled style="opacity:0.3"' : ''} onchange="macros[${mIdx}].steps[${sIdx}].time=this.value">
+            </td>
+            <td>
+              <input type="number" value="${step.dmx}" placeholder="0-255" ${step.type === 'delay' ? 'disabled style="opacity:0.3"' : ''} onchange="macros[${mIdx}].steps[${sIdx}].dmx=parseInt(this.value)">
+            </td>
+            <td><button class="btn-danger" type="button" onclick="removeMacroStep(${mIdx}, ${sIdx})">X</button></td>
+          </tr>
+        `).join("");
+
+        container.innerHTML += `
+          <div class="macro-card">
+            <div class="macro-header">
+              <div style="display:flex; gap:10px; align-items:center;">
+                <label style="margin:0;">Nome do Macro:</label>
+                <input type="text" value="${m.name}" style="width:180px;" onchange="macros[${mIdx}].name=this.value">
+                <label style="margin:0; margin-left:10px;">Canal do Aparelho:</label>
+                <select style="width:160px;" onchange="macros[${mIdx}].channel=parseInt(this.value); renderMacros();">${channelOptions}</select>
+              </div>
+              <div>
+                <button type="button" onclick="addMacroStep(${mIdx})">+ Adicionar Passo</button>
+                <button type="button" class="btn-danger" onclick="removeMacro(${mIdx})">Excluir Macro</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:40px;">#</th>
+                  <th style="width:180px;">Tipo</th>
+                  <th style="width:120px;">Tempo (Segs)</th>
+                  <th style="width:160px;">Valor DMX (CH${m.channel})</th>
+                  <th style="width:50px;">Ação</th>
+                </tr>
+              </thead>
+              <tbody>${stepsHtml}</tbody>
+            </table>
+          </div>
+        `;
+      });
+    }
+
+    function addMacro() {
+      macros.push({
+        name: "novo macro",
+        channel: 1,
+        steps: []
+      });
+      renderMacros();
+    }
+
+    function removeMacro(mIdx) {
+      macros.splice(mIdx, 1);
+      renderMacros();
+    }
+
+    function addMacroStep(mIdx) {
+      macros[mIdx].steps.push({ type: "data", time: "", dmx: 0 });
+      renderMacros();
+    }
+
+    function removeMacroStep(mIdx, sIdx) {
+      macros[mIdx].steps.splice(sIdx, 1);
+      renderMacros();
+    }
+
+    function updateMacroStepType(mIdx, sIdx, val) {
+      macros[mIdx].steps[sIdx].type = val;
+      if (val === 'delay') {
+        macros[mIdx].steps[sIdx].dmx = "";
+        macros[mIdx].steps[sIdx].time = 3.0;
+      } else {
+        macros[mIdx].steps[sIdx].time = "";
+        macros[mIdx].steps[sIdx].dmx = 0;
+      }
+      renderMacros();
+    }
+
+    function togglePanTilt() {
+      const isMoving = document.getElementById("fixtureType").value === "MOVING";
+      document.getElementById("panBox").style.display = isMoving ? "block" : "none";
+      document.getElementById("tiltBox").style.display = isMoving ? "block" : "none";
+    }
+
+    function generateR20Text() {
+      const author = document.getElementById("author").value;
+      const brand = document.getElementById("brand").value;
+      const fullName = document.getElementById("fullName").value;
+      const patchName = document.getElementById("patchName").value.replace(/\s+/g, '_');
+      const isMoving = document.getElementById("fixtureType").value === "MOVING";
+      const pan = isMoving ? document.getElementById("panDeg").value : 0;
+      const tilt = isMoving ? document.getElementById("tiltDeg").value : 0;
+      const mirrorType = isMoving ? 2 : 0;
+      const chCount = channels.length;
+
+      let file = `; '${fullName}', ${chCount} DMX Channels, filename: ${patchName}.R20\n`;
+      file += `; Author: ${author}\n;\n`;
+      file += `DEVICE  ${patchName.padEnd(20, ' ')} mode=${chCount} DMX  ${chCount} DMX Channels\n`;
+      file += `NAME "${brand}" "${fullName}"\n;\nTYPE  1  ${chCount}  M\n;\n`;
+      file += `MIRROR  ${mirrorType}   ${pan}   ${tilt}\n;\n`;
+      file += `DEVICEADDRESS\n"Handle  %2d"h\n"Fixture %11s"n\n"DMX     %03d"d\n""\n""\n"Set to ${chCount} DMX"\n""\n""\nDAEND\n;\n`;
+      file += `MINDMX=1\nMAXDMX=${513 - chCount}\nDIVBY=1\n;\nDMX\n`;
+
+      channels.forEach((ch, i) => {
+        const b = String(ch.bank).padStart(2, ' ');
+        const f = String(ch.fader).padStart(4, ' ');
+        const t = ch.type.padStart(4, ' ');
+        const off = String(i + 1).padStart(4, ' ');
+        const attr = ch.attr.padStart(4, ' ');
+        const nameFormatted = `"${ch.name}"`.padEnd(16, ' ');
+        const loc = String(ch.locate).padStart(5, ' ');
+        const high = String(ch.high || 0).padStart(5, ' ');
+        const low = String(ch.low || 0).padStart(5, ' ');
+        file += `${b}${f}${t}${off}   100   1N${attr}   1   ${nameFormatted}${loc}${high}${low}\n`;
+      });
+
+      file += `END\n;\nTEXT\n${brand} ${fullName}\n${chCount} DMX\nEND\n;\nATTR\nFunction Obsolete\nEND\n;\n`;
+
+      // GERADOR DE PFTABLE (SE EXISTIR)
+      paletteGroups.forEach(group => {
+        file += `PFTABLE "${group.name}"     -1   ${group.channel}\n`;
+        group.items.forEach(item => {
+          const itemFormatted = `"${item.name}"`.padEnd(20, ' ');
+          file += `${itemFormatted} ${String(item.button).padStart(3, ' ')}   ${String(item.dmx).padStart(3, ' ')}\n`;
+        });
+        file += `PFEND\n;\n`;
+      });
+
+      // GERADOR DE MACROS (SE EXISTIR)
+      macros.forEach(m => {
+        file += `MACRO "${m.name}"   1   ${m.channel}\n`;
+        m.steps.forEach(s => {
+          if (s.type === 'data') {
+            file += `MACROSTEP   0   0   ${s.dmx}\n`;
+          } else if (s.type === 'delay') {
+            file += `MACROSTEP   1   ${s.time}\n`;
+          }
+        });
+        file += `MEND\n;\n`;
+      });
+
+      return file;
+    }
+
+    function downloadR20() {
+      if (channels.length === 0) {
+        alert("Adicione pelo menos um canal antes de baixar!");
+        return;
+      }
+      const text = generateR20Text();
+      document.getElementById("output").value = text;
+      const patchName = document.getElementById("patchName").value.replace(/\s+/g, '_').toUpperCase();
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${patchName}.R20`;
+      a.click();
+    }
+
+    renderChannels();
+  </script>
+</body>
+</html>
